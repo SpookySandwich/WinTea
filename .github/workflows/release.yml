@@ -43,6 +43,15 @@ jobs:
       - name: Test
         run: ctest --preset release
 
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          & $iscc /DMyAppVersion=$ver installer\wintea.iss
+          if ($LASTEXITCODE -ne 0) { Write-Error "ISCC failed"; exit 1 }
+
       - name: Package
         shell: pwsh
         run: |
@@ -51,9 +60,11 @@ jobs:
           Copy-Item build/release/WinTea.exe dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath "WinTea-$ver-x64.zip"
+          $installer = "installer/WinTea-Setup-$ver.exe"
           $sums = @(
             "$((Get-FileHash build/release/WinTea.exe -Algorithm SHA256).Hash)  WinTea.exe"
             "$((Get-FileHash "WinTea-$ver-x64.zip" -Algorithm SHA256).Hash)  WinTea-$ver-x64.zip"
+            "$((Get-FileHash $installer -Algorithm SHA256).Hash)  WinTea-Setup-$ver.exe"
           )
           $sums | Out-File SHA256SUMS.txt -Encoding ascii
           Get-Content SHA256SUMS.txt
@@ -61,13 +72,16 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: build/release/WinTea.exe
+          subject-path: |
+            build/release/WinTea.exe
+            installer/WinTea-Setup-*.exe
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
+            installer/WinTea-Setup-*.exe
             WinTea-*-x64.zip
             build/release/WinTea.exe
             SHA256SUMS.txt

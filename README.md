@@ -43,15 +43,16 @@ That's it. One ~200 KB executable, no installer, no .NET, no runtime, **no netwo
 
 ## Install
 
-```powershell
-# winget (after first stable release)
-winget install WinTea
+**Installer (easiest).** Download **`WinTea-Setup-x.y.z.exe`** from the [latest release](https://github.com/SpookySandwich/WinTea/releases) and run it. It's a per-user install — **no admin prompt** — that adds a Start Menu entry with the teacup icon and offers to start WinTea with Windows.
 
-# scoop
+**Portable.** Prefer a single file? Grab **`WinTea.exe`** from the [latest release](https://github.com/SpookySandwich/WinTea/releases), drop it anywhere, and turn on autostart from the tray menu.
+
+**Package managers.**
+
+```powershell
+winget install WinTea     # after the first stable release
 scoop install https://raw.githubusercontent.com/SpookySandwich/WinTea/master/packaging/scoop/wintea.json
 ```
-
-Or grab `WinTea.exe` from the [latest release](https://github.com/SpookySandwich/WinTea/releases) and run it — it's portable, put it anywhere.
 
 <details>
 <summary>Verify the download (recommended for any keyboard-hook tool)</summary>

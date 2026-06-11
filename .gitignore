@@ -3,3 +3,4 @@ out/
 _*.bat
 *.user
 .vs/
+installer/*.exe
