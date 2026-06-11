@@ -78,13 +78,52 @@ function New-Glyph([int]$S, [string]$mode) {
     return $bmp
 }
 
+# Classic uncompressed ICO entry (BITMAPINFOHEADER + BGRA + AND mask).
+# Sizes below 256 MUST use this format: the shell (Start menu, Explorer,
+# ExtractAssociatedIcon) does not decode PNG-compressed entries reliably except
+# for the 256px slot -- all-PNG icons render as the generic placeholder.
+function ConvertTo-IcoDib([System.Drawing.Bitmap]$bmp) {
+    $S = $bmp.Width
+    $ms = New-Object System.IO.MemoryStream
+    $bw = New-Object System.IO.BinaryWriter($ms)
+    $maskRow = [int][Math]::Ceiling($S / 32.0) * 4   # 1bpp AND-mask row, 32-bit padded
+    $bw.Write([uint32]40)                            # BITMAPINFOHEADER
+    $bw.Write([int32]$S)
+    $bw.Write([int32]($S * 2))                       # height counts XOR + AND blocks
+    $bw.Write([uint16]1); $bw.Write([uint16]32)
+    $bw.Write([uint32]0)                             # BI_RGB
+    $bw.Write([uint32]($S * $S * 4 + $maskRow * $S))
+    $bw.Write([int32]0); $bw.Write([int32]0); $bw.Write([uint32]0); $bw.Write([uint32]0)
+    for ($y = $S - 1; $y -ge 0; $y--) {              # XOR: BGRA, bottom-up
+        for ($x = 0; $x -lt $S; $x++) {
+            $c = $bmp.GetPixel($x, $y)
+            $bw.Write([byte]$c.B); $bw.Write([byte]$c.G); $bw.Write([byte]$c.R); $bw.Write([byte]$c.A)
+        }
+    }
+    for ($y = $S - 1; $y -ge 0; $y--) {              # AND mask: 1 = transparent
+        $row = New-Object byte[] $maskRow
+        for ($x = 0; $x -lt $S; $x++) {
+            if ($bmp.GetPixel($x, $y).A -eq 0) {
+                $row[$x -shr 3] = $row[$x -shr 3] -bor (0x80 -shr ($x -band 7))
+            }
+        }
+        $bw.Write($row)
+    }
+    $bw.Flush()
+    return [byte[]]$ms.ToArray()   # MUST be byte[]: an Object[] binds Write() to the char[] overload
+}
+
 function Save-Ico([int[]]$sizes, [string]$mode, [string]$path) {
-    $imgs = @()
+    $imgs = New-Object 'System.Collections.Generic.List[byte[]]'
     foreach ($s in $sizes) {
         $bmp = New-Glyph $s $mode
-        $msp = New-Object System.IO.MemoryStream
-        $bmp.Save($msp, [System.Drawing.Imaging.ImageFormat]::Png)
-        $imgs += , ($msp.ToArray())
+        if ($s -ge 256) {  # only the 256 slot may be PNG-compressed
+            $msp = New-Object System.IO.MemoryStream
+            $bmp.Save($msp, [System.Drawing.Imaging.ImageFormat]::Png)
+            $imgs.Add([byte[]]$msp.ToArray())
+        } else {
+            $imgs.Add([byte[]](ConvertTo-IcoDib $bmp))
+        }
         $bmp.Dispose()
     }
     $fs = [System.IO.File]::Create($path)
@@ -98,7 +137,7 @@ function Save-Ico([int[]]$sizes, [string]$mode, [string]$path) {
         $bw.Write([uint32]$imgs[$i].Length); $bw.Write([uint32]$offset)
         $offset += $imgs[$i].Length
     }
-    foreach ($img in $imgs) { $bw.Write($img) }
+    foreach ($img in $imgs) { $bw.Write([byte[]]$img) }
     $bw.Flush(); $fs.Close()
     Write-Host "wrote $path ($($sizes.Count) sizes)"
 }

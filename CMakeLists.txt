@@ -42,6 +42,11 @@ add_custom_command(
     COMMENT "Compiling resources (wintea.rc)"
     VERBATIM)
 
+# Mark the generated .res as a pre-compiled object so CMake passes it to the
+# linker. Without EXTERNAL_OBJECT, a custom-command output is built but never
+# linked, and the exe ends up with no icons/version resources.
+set_source_files_properties(${WINTEA_RES} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
+
 # --- WinTea (the app) ------------------------------------------------------
 # app.manifest is a source so CMake's linker manifest step embeds it (mt.exe).
 add_executable(wintea WIN32
