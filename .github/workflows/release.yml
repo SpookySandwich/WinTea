@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write       # create the GitHub release
+  id-token: write       # build-provenance attestation
+  attestations: write   # build-provenance attestation
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Verify tag matches project version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}".TrimStart('v')
+          $cml = Get-Content CMakeLists.txt -Raw
+          if ($cml -notmatch 'project\(WinTea[\s\S]*?VERSION\s+(\d+\.\d+\.\d+)') {
+            Write-Error "could not find project VERSION in CMakeLists.txt"; exit 1
+          }
+          $ver = $Matches[1]
+          if ($tag -ne $ver) { Write-Error "tag v$tag does not match project version $ver"; exit 1 }
+          Write-Host "tag and project version agree: $ver"
+
+      - name: Build
+        run: |
+          cmake --preset release
+          cmake --build --preset release
+
+      - name: Test
+        run: ctest --preset release
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          New-Item -ItemType Directory dist | Out-Null
+          Copy-Item build/release/WinTea.exe dist/
+          Copy-Item README.md, LICENSE dist/
+          Compress-Archive -Path dist/* -DestinationPath "WinTea-$ver-x64.zip"
+          $sums = @(
+            "$((Get-FileHash build/release/WinTea.exe -Algorithm SHA256).Hash)  WinTea.exe"
+            "$((Get-FileHash "WinTea-$ver-x64.zip" -Algorithm SHA256).Hash)  WinTea-$ver-x64.zip"
+          )
+          $sums | Out-File SHA256SUMS.txt -Encoding ascii
+          Get-Content SHA256SUMS.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: build/release/WinTea.exe
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            WinTea-*-x64.zip
+            build/release/WinTea.exe
+            SHA256SUMS.txt
+
+      # Optional: a VirusTotal scan link in the release notes reassures users that
+      # a keyboard-hook exe is clean. Enable by adding a VT_API_KEY repo secret.
+      - name: VirusTotal scan
+        if: ${{ env.VT_API_KEY != '' }}
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ secrets.VT_API_KEY }}
+          update_release_body: true
+          files: |
+            build/release/WinTea.exe

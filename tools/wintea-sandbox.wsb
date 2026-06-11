@@ -1,0 +1,19 @@
+<Configuration>
+  <!-- Try WinTea risk-free in Windows Sandbox (Win Pro/Enterprise: enable the
+       "Windows Sandbox" optional feature, then double-click this file).
+
+       It maps the repo read-only into the sandbox. Inside, build it, or drop a
+       downloaded WinTea.exe on the desktop and run it. Nothing touches your
+       real machine. Note: the sandbox has no Windows Terminal preinstalled, so
+       WinTea will fall back to PowerShell/cmd there. -->
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>..</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\WinTea</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>explorer.exe C:\Users\WDAGUtilityAccount\Desktop\WinTea</Command>
+  </LogonCommand>
+</Configuration>

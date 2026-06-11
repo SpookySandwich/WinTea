@@ -1,0 +1,30 @@
+{
+    "version": "0.9.0",
+    "description": "Win+T opens a terminal. Win+Alt+T opens it as admin. A single ~200 KB exe.",
+    "homepage": "https://github.com/SpookySandwich/WinTea",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/SpookySandwich/WinTea/releases/download/v0.9.0/WinTea-0.9.0-x64.zip",
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+    },
+    "bin": "WinTea.exe",
+    "shortcuts": [
+        ["WinTea.exe", "WinTea"]
+    ],
+    "pre_uninstall": [
+        "if (Get-Process WinTea -ErrorAction SilentlyContinue) {",
+        "    & \"$dir\\WinTea.exe\" --exit",
+        "    Start-Sleep -Seconds 1",
+        "}"
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/SpookySandwich/WinTea/releases/download/v$version/WinTea-$version-x64.zip"
+            }
+        }
+    }
+}

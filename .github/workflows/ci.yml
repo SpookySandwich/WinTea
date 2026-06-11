@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Configure
+        run: cmake --preset release
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: Test
+        run: ctest --preset release
+
+      - name: Smoke test (--version exits cleanly)
+        shell: pwsh
+        run: |
+          $p = Start-Process build/release/WinTea.exe -ArgumentList '--version' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { Write-Error "WinTea --version exited $($p.ExitCode)"; exit 1 }
+          Write-Host "WinTea --version OK"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinTea-x64
+          path: build/release/WinTea.exe
+          if-no-files-found: error
