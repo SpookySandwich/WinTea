@@ -85,7 +85,8 @@ LRESULT CALLBACK proc(int code, WPARAM wParam, LPARAM lParam) {
             g_swallowedVk = static_cast<UINT>(kb->vkCode);
             sendDummyKey();
             if (g_target)
-                PostMessageW(g_target, WM_APP_LAUNCH, admin ? 1 : 0, 0);
+                PostMessageW(g_target, WM_APP_LAUNCH, admin ? 1 : 0,
+                             reinterpret_cast<LPARAM>(GetForegroundWindow()));
             return 1;
         }
     }

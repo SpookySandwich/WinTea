@@ -55,13 +55,14 @@ add_executable(wintea WIN32
     src/chord.cpp
     src/config.cpp
     src/launch.cpp
+    src/shell_location.cpp
     src/tray.cpp
     src/autostart.cpp
     src/res/app.manifest
     ${WINTEA_RES})
 wintea_common_flags(wintea)
 target_include_directories(wintea PRIVATE ${CMAKE_BINARY_DIR}/generated src)
-target_link_libraries(wintea PRIVATE user32 shell32 advapi32 wtsapi32)
+target_link_libraries(wintea PRIVATE user32 shell32 advapi32 wtsapi32 ole32 oleaut32)
 set_target_properties(wintea PROPERTIES OUTPUT_NAME "WinTea")
 
 # --- Tests -----------------------------------------------------------------

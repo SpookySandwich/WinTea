@@ -101,7 +101,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     switch (msg) {
     case WM_APP_LAUNCH:
-        LaunchTerminal(g_config, wParam != 0, hwnd);
+        LaunchTerminal(g_config, wParam != 0, hwnd, reinterpret_cast<HWND>(lParam));
         return 0;
 
     case WM_APP_RELOAD:

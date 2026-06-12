@@ -55,12 +55,14 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $ver = "${{ github.ref_name }}".TrimStart('v')
           New-Item -ItemType Directory dist | Out-Null
           Copy-Item build/release/WinTea.exe dist/
           Copy-Item README.md, LICENSE dist/
           Compress-Archive -Path dist/* -DestinationPath "WinTea-$ver-x64.zip"
           $installer = "installer/WinTea-Setup-$ver.exe"
+          if (-not (Test-Path $installer)) { Write-Error "missing installer: $installer"; exit 1 }
           $sums = @(
             "$((Get-FileHash build/release/WinTea.exe -Algorithm SHA256).Hash)  WinTea.exe"
             "$((Get-FileHash "WinTea-$ver-x64.zip" -Algorithm SHA256).Hash)  WinTea-$ver-x64.zip"
@@ -80,6 +82,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          fail_on_unmatched_files: true
           files: |
             installer/WinTea-Setup-*.exe
             WinTea-*-x64.zip

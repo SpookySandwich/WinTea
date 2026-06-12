@@ -6,7 +6,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.9.0] - 2026-06-11
+## [0.9.0] - 2026-06-12
 
 First public preview.
 
@@ -16,8 +16,11 @@ First public preview.
 - Worker-thread launch so the hook never blocks on UAC.
 - Auto-detect terminal chain: `wt` → `pwsh` → `powershell` → `cmd`, with an
   override mode and a broken-`wt`-alias guard.
+- Explorer-aware launch directories: `Win+T` opens in the focused File Explorer
+  folder when possible, controlled by `follow_explorer`.
 - INI config at `%APPDATA%\WinTea\config.ini` with live auto-reload.
 - Tray icon (theme-aware), context menu, enable/disable, run-at-startup.
+- Per-user Inno Setup installer published by release CI.
 - Single-instance with `--exit` (clean upgrades), `--version`, `--selftest`.
 - Session/power resync so chords keep working after lock/unlock and sleep.
 - Per-monitor-v2 DPI manifest; static single ~200 KB exe, zero dependencies.

@@ -25,9 +25,11 @@ constexpr wchar_t kTemplate[] =
     L"[launch]\r\n"
     L"; command empty = auto-detect: wt -> pwsh -> powershell -> cmd\r\n"
     L"; if you set command, args are used verbatim (env vars like %USERPROFILE% expand)\r\n"
+    L"; follow_explorer uses the focused File Explorer folder as the launch directory\r\n"
     L"command =\r\n"
     L"args    =\r\n"
     L"workdir = %USERPROFILE%\r\n"
+    L"follow_explorer = true\r\n"
     L"\r\n"
     L"[ui]\r\n"
     L"; tray balloons for errors and config reloads\r\n"
@@ -118,6 +120,7 @@ LoadedConfig LoadConfig() {
     c.command = readString(L"launch", L"command", L"", path);
     c.args    = readString(L"launch", L"args", L"", path);
     c.workdir = readString(L"launch", L"workdir", L"%USERPROFILE%", path);
+    c.followExplorer = readBool(L"launch", L"follow_explorer", true, path);
     c.notifications = readBool(L"ui", L"notifications", true, path);
     return out;
 }

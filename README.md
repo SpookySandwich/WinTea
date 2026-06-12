@@ -28,10 +28,11 @@
 
 | Press | You get |
 | --- | --- |
-| **`Win` + `T`** | a fresh terminal window |
-| **`Win` + `Alt` + `T`** | a terminal window **as administrator** (one UAC prompt) |
+| **`Win` + `T`** | a fresh terminal window, opened in the focused File Explorer folder when possible |
+| **`Win` + `Alt` + `T`** | a terminal window **as administrator** (one UAC prompt), also following Explorer when possible |
 
-That's it. One ~200 KB executable, no installer, no .NET, no runtime, **no network access at all**.
+That's it. One ~200 KB executable, an optional per-user installer, no .NET, no runtime,
+**no network access at all**.
 
 ### Why it exists
 
@@ -94,9 +95,11 @@ admin_terminal = win+alt+t
 [launch]
 ; command empty = auto-detect: wt -> pwsh -> powershell -> cmd
 ; if you set command, args are used verbatim (env vars like %USERPROFILE% expand)
+; follow_explorer uses the focused File Explorer folder as the launch directory
 command =
 args    =
 workdir = %USERPROFILE%
+follow_explorer = true
 
 [ui]
 ; tray balloons for errors and config reloads
@@ -110,6 +113,7 @@ Want PowerShell 7 in a specific folder instead of Windows Terminal?
 command = pwsh.exe
 args    = -NoLogo
 workdir = C:\dev
+follow_explorer = false
 ```
 
 ---

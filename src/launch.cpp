@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app.h"
+#include "shell_location.h"
 
 namespace wintea {
 namespace {
@@ -109,13 +110,17 @@ unsigned __stdcall worker(void* arg) {
 
 } // namespace
 
-void LaunchTerminal(const Config& config, bool admin, HWND notifyHwnd) {
+void LaunchTerminal(const Config& config, bool admin, HWND notifyHwnd, HWND sourceHwnd) {
     auto* job = new Job{};
     job->admin = admin;
     job->notifyHwnd = notifyHwnd;
     job->notifications = config.notifications;
 
     std::wstring workdir = expand(config.workdir);
+    if (config.followExplorer) {
+        std::wstring explorerDir = ExplorerDirectoryFromWindow(sourceHwnd);
+        if (!explorerDir.empty()) workdir = explorerDir;
+    }
 
     if (!config.command.empty()) {
         // Override mode: exactly one attempt, user's command/args verbatim.

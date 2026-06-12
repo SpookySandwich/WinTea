@@ -15,6 +15,7 @@ struct Config {
     std::wstring command;        // empty => auto-detect wt/pwsh/powershell/cmd
     std::wstring args;           // used verbatim in override mode
     std::wstring workdir;        // default %USERPROFILE% (unexpanded here)
+    bool         followExplorer = true;
     bool         notifications = true;
 };
 

@@ -10,8 +10,9 @@
 namespace wintea {
 
 // Resolves the command per config (auto-detect chain or override), then launches
-// asynchronously. `admin` selects the runas verb. Errors are reported as balloons
-// posted back to `notifyHwnd` (WM_APP_NOTIFY).
-void LaunchTerminal(const Config& config, bool admin, HWND notifyHwnd);
+// asynchronously. `admin` selects the runas verb. If `sourceHwnd` is an Explorer
+// window and follow_explorer is enabled, its folder overrides the configured
+// workdir. Errors are reported as balloons posted back to `notifyHwnd`.
+void LaunchTerminal(const Config& config, bool admin, HWND notifyHwnd, HWND sourceHwnd);
 
 } // namespace wintea
